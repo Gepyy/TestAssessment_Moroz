@@ -1,4 +1,6 @@
-﻿namespace TestAssessment_Moroz
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace TestAssessment_Moroz
 {
     public class Program
     {
@@ -6,6 +8,13 @@
         {
             using var context = new Context();
             var tasks = new Tasks(context);
+
+            //context.Database.ExecuteSqlRaw("DELETE FROM Trips");
+            //context.SaveChanges();
+
+            Console.WriteLine("Importing CSV into the database...");
+            tasks.ImportCsvToDatabase("D:\\DNU\\TestAssessment_Moroz\\TestAssessment_Moroz\\sample-cab-data.csv");
+            Console.WriteLine("CSV import completed.");
 
             Console.WriteLine("Query 1: PULocationID with highest average tip:");
             Console.WriteLine(tasks.GetHighestAverageTipLocation());
@@ -23,8 +32,8 @@
                 Console.WriteLine($"Trip ID: {trip.Id}, Duration: {duration} minutes");
             }
 
-            Console.WriteLine("\nQuery 4: Search trips by PULocationId (e.g., 1):");
-            foreach (var trip in tasks.SearchTripsByPULocation(1))
+            Console.WriteLine("\nQuery 4: Search trips by PULocationId (e.g., 7):");
+            foreach (var trip in tasks.SearchTripsByPULocation(7))
             {
                 Console.WriteLine($"Trip ID: {trip.Id}, Pickup Location: {trip.PULocationID}");
             }
@@ -44,7 +53,6 @@
             Console.WriteLine("\nTask 7: Normalize Store_and_fwd_flag");
             tasks.NormalizeStoreAndFwdFlag();
             Console.WriteLine("Normalization completed.");
-
             Console.WriteLine("\nAll tasks executed.");
         }
     }

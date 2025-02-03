@@ -1,4 +1,5 @@
 ﻿using CsvHelper;
+using CsvHelper.Configuration;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -6,11 +7,13 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CsvHelper.Configuration;
 
 namespace TestAssessment_Moroz
 {
     public class Tasks
     {
+        public int counter = 0;
         private readonly Context _context;
 
         public Tasks(Context context)
@@ -65,11 +68,18 @@ namespace TestAssessment_Moroz
         public void RemoveDuplicatesAndSaveToCsv(string csvPath)
         {
             var duplicates = _context.Models
-                .GroupBy(t => new { t.Pickup_datetime, t.Dropoff_datetime, t.Passenger_count })
+                .AsEnumerable()
+                .GroupBy(t => new { t.Pickup_datetime, t.Dropoff_datetime, t.Passenger_count, t.Trip_distance, t.Store_and_fwd_flag, t.PULocationID, t.DOLocationID, t.Fare_amount, t.Tip_amount })
                 .Where(g => g.Count() > 1)
-                .SelectMany(g => g.Skip(1))
+                .SelectMany(g => g.OrderBy(x => x.Id).Skip(1))
                 .ToList();
+            var duplicatesCount = _context.Models
+                .AsEnumerable()
+                .GroupBy(t => new { t.Pickup_datetime, t.Dropoff_datetime, t.Passenger_count, t.Trip_distance, t.Store_and_fwd_flag, t.PULocationID, t.DOLocationID, t.Fare_amount, t.Tip_amount })
+                .Where(g => g.Count() > 1)
+                .Sum(g => g.Count() - 1);
 
+            Console.WriteLine($"Количество дубликатов: {duplicatesCount}");
             if (duplicates.Any())
             {
                 using (var writer = new StreamWriter(csvPath))
@@ -85,7 +95,6 @@ namespace TestAssessment_Moroz
                 _context.SaveChanges();
             }
         }
-
         // 7
         public void NormalizeStoreAndFwdFlag()
         {
@@ -100,13 +109,17 @@ namespace TestAssessment_Moroz
 
             _context.SaveChanges();
         }
-
         public void ImportCsvToDatabase(string csvFilePath)
         {
             List<Model> models;
             using (var reader = new StreamReader(csvFilePath))
-            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            using (var csv = new CsvReader(reader, new CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture)
             {
+                HeaderValidated = null,
+                MissingFieldFound = null,
+            }))
+            {
+                csv.Context.TypeConverterOptionsCache.GetOptions<int>().NullValues.Add("");
                 models = csv.GetRecords<Model>().ToList();
             }
 
@@ -115,6 +128,17 @@ namespace TestAssessment_Moroz
                 _context.Models.AddRange(models);
                 _context.SaveChanges();
             }
+        }
+    }
+    public class CustomInt32Converter : CsvHelper.TypeConversion.Int32Converter
+    {
+        public override object ConvertFromString(string text, IReaderRow row, MemberMapData memberMapData)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return 0;
+            }
+            return base.ConvertFromString(text, row, memberMapData);
         }
     }
 }

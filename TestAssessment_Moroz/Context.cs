@@ -17,25 +17,24 @@ namespace TestAssessment_Moroz
                 optionsBuilder.UseSqlServer(@"Data Source=DESKTOP-EH9PUDO;Initial Catalog=TripData;Integrated Security=True;Encrypt=false;");
             }
         }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Model>(entity =>
             {
-                entity.HasKey(t => t.Id);
+                entity.Property(t => t.Id).ValueGeneratedOnAdd();
                 entity.Property(t => t.Pickup_datetime).IsRequired();
                 entity.Property(t => t.Dropoff_datetime).IsRequired();
                 entity.Property(t => t.Passenger_count).IsRequired();
                 entity.Property(t => t.Trip_distance).IsRequired();
-                entity.Property(t => t.Store_and_fwd_flag).HasMaxLength(1);
+                entity.Property(t => t.Store_and_fwd_flag).HasMaxLength(4);
                 entity.Property(t => t.PULocationID).IsRequired();
                 entity.Property(t => t.DOLocationID).IsRequired();
                 entity.Property(t => t.Fare_amount).IsRequired();
                 entity.Property(t => t.Tip_amount).IsRequired();
 
-                entity.HasIndex(t => t.PULocationID).HasDatabaseName("IX_Trips_PULocationID"); // Индекс для поиска по PULocationID
-                entity.HasIndex(t => t.Trip_distance).HasDatabaseName("IX_Trips_TripDistance"); // Индекс для длинных поездок
-                entity.HasIndex(t => new { t.Pickup_datetime, t.Dropoff_datetime }).HasDatabaseName("IX_Trips_TravelTime"); // Индекс по времени поездок
+                entity.HasIndex(t => t.PULocationID).HasDatabaseName("IX_Trips_PULocationID");
+                entity.HasIndex(t => t.Trip_distance).HasDatabaseName("IX_Trips_TripDistance"); 
+                entity.HasIndex(t => new { t.Pickup_datetime, t.Dropoff_datetime }).HasDatabaseName("IX_Trips_TravelTime"); 
             });
         }
     }

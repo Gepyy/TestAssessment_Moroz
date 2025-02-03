@@ -13,8 +13,9 @@ namespace TestAssessment_Moroz
         public DateTime Pickup_datetime { get; set; }
         [CsvHelper.Configuration.Attributes.Name("tpep_dropoff_datetime")]
         public DateTime Dropoff_datetime { get; set; }
+        [CsvHelper.Configuration.Attributes.TypeConverter(typeof(CustomInt32Converter))]
         [CsvHelper.Configuration.Attributes.Name("passenger_count")]
-        public int Passenger_count { get; set; }
+        public int? Passenger_count { get; set; }
         [CsvHelper.Configuration.Attributes.Name("trip_distance")]
         public double Trip_distance { get; set; }
         [CsvHelper.Configuration.Attributes.Name("store_and_fwd_flag")]
