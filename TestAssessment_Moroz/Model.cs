@@ -8,6 +8,7 @@ namespace TestAssessment_Moroz
 {
     public class Model
     {
+        //Just comment all unnecessary fields
         //public int VendorId { get; set; }
         public DateTime Pickup_datetime { get; set; }
         public DateTime Dropoff_datetime { get; set; }
